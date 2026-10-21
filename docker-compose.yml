@@ -3,7 +3,7 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: voter
-      POSTGRES_PASSWORD: changeme
+      POSTGRES_PASSWORD:
       POSTGRES_DB: voting
     ports:
       - "127.0.0.1:5433:5432"
