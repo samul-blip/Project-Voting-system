@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Candidate account</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header><img id="logo" alt=""><h1 id="election-title">Candidate account</h1></header>
+  <main>
+    <section id="loginCard" class="card login-card login-main">
+      <p class="eyebrow">Candidate access</p>
+      <h2>Sign in to your account</h2>
+      <p class="login-intro">Use the login details provided by your election administrator.</p>
+      <label for="username">Username</label>
+      <input id="username" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <p id="loginError" class="error" role="alert"></p>
+      <button id="loginBtn">Sign in</button>
+    </section>
+
+    <section id="dashboard" hidden>
+      <section class="candidate-profile card" aria-label="Candidate profile">
+        <div class="candidate-profile-heading">
+          <img id="profilePhotoPreview" class="candidate-profile-avatar" src="/default-avatar.svg" alt="Profile picture">
+          <div class="candidate-profile-identity">
+            <p class="eyebrow">Candidate profile</p>
+            <h2 id="candidateName"></h2>
+            <p id="candidatePosition" class="candidate-profile-position"></p>
+            <p id="candidateElection" class="muted"></p>
+          </div>
+        </div>
+
+        <div class="candidate-profile-stats" aria-label="Vote totals">
+          <div class="candidate-profile-stat">
+            <strong id="voteCount">0</strong>
+            <span>Current votes</span>
+          </div>
+          <div class="candidate-profile-stat">
+            <strong id="partyVoteCount">0</strong>
+            <span>Party total votes</span>
+          </div>
+        </div>
+
+        <section class="candidate-profile-about" aria-labelledby="candidateBioHeading">
+          <h3 id="candidateBioHeading">Bio</h3>
+          <p id="candidateBio" class="candidate-profile-bio"></p>
+          <h3>Social links</h3>
+          <nav id="candidateSocialLinks" class="social-links" aria-label="Candidate social links"></nav>
+          <p id="candidateSocialEmpty" class="muted">No social links added yet.</p>
+        </section>
+
+        <div class="btns candidate-profile-actions">
+          <a class="btn alt" href="/profiles.html">Explore election profiles</a>
+          <button id="logoutBtn" class="secondary">Log out</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>My profile</h2>
+        <label for="profilePhoto">Upload profile picture (JPEG, PNG, or WebP; max 1 MB)</label>
+        <input id="profilePhoto" type="file" accept="image/jpeg,image/png,image/webp">
+        <button id="removeProfilePhoto" class="secondary" type="button">Use default picture</button>
+        <label for="profileBio">About me</label>
+        <textarea id="profileBio" rows="4" maxlength="500" placeholder="Share a little about yourself"></textarea>
+        <label for="profileLinks">Social links (one per line: name | https://...)</label>
+        <textarea id="profileLinks" rows="3" placeholder="Instagram | https://instagram.com/yourname"></textarea>
+        <button id="saveProfile">Save profile</button>
+        <p id="profileMessage" class="muted" role="status"></p>
+      </section>
+    </section>
+  </main>
+  <script src="/js/theme.js"></script>
+  <script src="/js/profile-photo.js"></script>
+  <script src="/js/candidate.js"></script>
+</body>
+</html>

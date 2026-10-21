@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My voting page</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header><img id="logo" alt=""><h1 id="election-title">Voting</h1></header>
+  <main>
+    <section class="voter-profile card" aria-label="Voter profile">
+      <div class="voter-profile-heading">
+        <img id="profilePhotoPreview" class="voter-profile-avatar" src="/default-avatar.svg" alt="Profile picture">
+        <div>
+          <p class="eyebrow">Voter profile</p>
+          <h2 id="name"></h2>
+          <p id="voterSection" class="voter-profile-section"></p>
+        </div>
+      </div>
+      <p id="status"></p>
+      <details class="voter-profile-editor">
+        <summary>Edit profile</summary>
+        <label for="profilePhoto">Upload profile picture (JPEG, PNG, or WebP; max 1 MB)</label>
+        <input id="profilePhoto" type="file" accept="image/jpeg,image/png,image/webp">
+        <button id="removeProfilePhoto" class="secondary" type="button">Use default picture</button>
+        <label for="profileBio">About me</label>
+        <textarea id="profileBio" rows="3" maxlength="500" placeholder="A little about you"></textarea>
+        <button id="saveProfile">Save profile</button>
+        <p id="profileMessage" class="muted" role="status"></p>
+      </details>
+      <details class="voter-profile-editor">
+        <summary>Change voter code</summary>
+        <p class="muted">Use your current voter code to set a new sign-in code.</p>
+        <label for="currentVoterCode">Current voter code</label>
+        <input id="currentVoterCode" type="password" autocomplete="current-password">
+        <label for="newVoterCode">New voter code (at least 8 characters)</label>
+        <input id="newVoterCode" type="password" autocomplete="new-password" minlength="8" maxlength="128">
+        <label for="confirmVoterCode">Confirm new voter code</label>
+        <input id="confirmVoterCode" type="password" autocomplete="new-password" minlength="8" maxlength="128">
+        <button id="changeVoterCode">Change voter code</button>
+        <p id="voterCodeMessage" class="muted" role="status"></p>
+      </details>
+      <div class="voter-profile-footer">
+        <p>Student ID: <strong id="sid"></strong></p>
+        <div class="btns">
+          <a class="btn alt" href="/profiles.html">Explore election profiles</a>
+          <button id="logoutBtn" class="secondary">Log out</button>
+        </div>
+      </div>
+      <div id="record" class="card record" hidden></div>
+    </section>
+    <div id="positions"></div>
+    <button id="submit" hidden>Submit my vote</button>
+  </main>
+  <script src="/js/theme.js"></script>
+  <script src="/js/profile-photo.js"></script>
+  <script src="/js/receipt.js"></script>
+  <script src="/js/voter.js"></script>
+</body>
+</html>

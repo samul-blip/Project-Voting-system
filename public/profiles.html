@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Election profiles</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header><img id="logo" alt=""><h1 id="election-title">Election profiles</h1></header>
+  <main>
+    <div class="card">
+      <p class="eyebrow">Election community</p>
+      <h2>People in this election</h2>
+      <p class="muted">Profiles are visible to signed-in participants in this election.</p>
+      <div id="profileList" class="profile-grid" aria-live="polite"></div>
+      <p id="profileError" class="error" role="alert"></p>
+      <a class="btn alt" href="/">Back to my account</a>
+    </div>
+  </main>
+  <script src="/js/theme.js"></script>
+  <script src="/js/profiles.js"></script>
+</body>
+</html>

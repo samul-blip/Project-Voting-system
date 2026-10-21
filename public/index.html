@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vote</title><link rel="stylesheet" href="/css/style.css"></head>
+<body>
+  <header><img id="logo" alt=""><h1 id="election-title">Election</h1></header>
+  <main class="login-main"><div class="card login-card">
+    <p class="eyebrow">Secure student voting</p>
+    <h2>Log in to vote</h2>
+    <p class="login-intro">Use the student ID and voting code provided by your election administrator.</p>
+    <label for="studentId">Student ID</label>
+    <input id="studentId" placeholder="e.g. S101" autocomplete="username" required>
+    <label for="code">Voting code</label>
+    <input id="code" placeholder="Enter your voting code" type="password" autocomplete="current-password" required>
+    <p id="error" class="error"></p>
+    <button id="loginBtn">Continue to vote</button>
+    <p class="muted">Running as a candidate? <a href="/candidate.html">Sign in to your candidate account</a></p>
+  </div></main>
+  <script src="/js/theme.js"></script>
+  <script src="/js/login.js"></script>
+</body></html>

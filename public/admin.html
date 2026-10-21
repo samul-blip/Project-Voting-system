@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    @media print {
+      body * { visibility:hidden; }
+      #codesBox, #codesBox * { visibility:visible; }
+      #codesBox { position:absolute; left:0; top:0; width:100%; }
+      #printBtn, .warn { display:none; }
+    }
+  </style>
+</head>
+<body>
+  <header><h1>Election Admin</h1></header>
+  <main>
+    <div id="msg" class="hidden"></div>
+
+    <!-- First-time setup: Main Admin -->
+    <div id="setupBox" class="card hidden">
+      <h2>First-time setup</h2>
+      <p>Create the <strong>Main Admin</strong> account. Only this account can create or delete other admins.</p>
+      <input id="su" placeholder="Username" autocomplete="username">
+      <input id="sp1" type="password" placeholder="Password (at least 8 characters)" autocomplete="new-password">
+      <input id="sp2" type="password" placeholder="Repeat password" autocomplete="new-password">
+      <button id="setupBtn">Create Main Admin</button>
+    </div>
+
+    <!-- Login -->
+    <div id="loginBox" class="card hidden">
+      <h2>Admin login</h2>
+      <input id="lu" placeholder="Username" autocomplete="username">
+      <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+      <button id="loginBtn">Log in</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="app" class="hidden">
+
+      <div class="card">
+        <div class="btns" style="justify-content:space-between">
+          <span>Logged in as <strong id="whoami"></strong></span>
+          <button id="logoutBtn" class="secondary">Log out</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Election</h2>
+        <select id="electionSelect"></select>
+        <div class="btns">
+          <span>Status: <span id="statusBadge" class="badge">-</span></span>
+          <button id="btnDraft" class="secondary">Set to draft</button>
+          <button id="btnOpen">Open voting</button>
+          <button id="btnClose" class="secondary">Close voting</button>
+          <button id="btnDelete" class="danger">Delete election</button>
+        </div>
+        <details style="margin-top:1rem">
+          <summary><strong>Create a new election</strong></summary>
+          <div style="margin-top:1rem">
+            <input id="eTitle" placeholder="Election title (e.g. Student Council 2027)">
+            <input id="eDesc" placeholder="Description (optional)">
+            <div class="row">
+              <label>Primary color <input id="ePrimary" type="color" value="#1e66f5"></label>
+              <label>Accent color <input id="eAccent" type="color" value="#f5a623"></label>
+            </div>
+            <input id="eLogo" placeholder="Logo URL (optional)">
+            <button id="createElection">Create election</button>
+          </div>
+        </details>
+      </div>
+
+      <div class="card">
+        <h2>Live results</h2>
+        <p id="turnout"></p>
+        <div id="liveCharts" class="charts"></div>
+      </div>
+
+      <div class="card">
+        <h2>Positions</h2>
+        <div class="row">
+          <input id="posTitle" placeholder="Position title (e.g. President)">
+          <button id="addPosition">Add position</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Add a candidate</h2>
+        <select id="candPosition"></select>
+        <input id="candName" placeholder="Candidate name">
+        <input id="candGrade" placeholder="Grade / section (e.g. Grade 12-A)">
+        <input id="candBio" placeholder="Short bio (optional)">
+        <input id="candPhoto" placeholder="Photo URL (optional)">
+        <label for="candUsername">Candidate account username</label>
+        <input id="candUsername" placeholder="Username (3-32 letters, numbers, . _ -)" autocomplete="off">
+        <label for="candPassword">Candidate account password</label>
+        <input id="candPassword" type="password" placeholder="At least 8 characters" autocomplete="new-password">
+        <button id="addCandidate">Add candidate</button>
+        <h3>Current candidates</h3>
+        <div id="candList"></div>
+      </div>
+
+      <div class="card">
+        <h2>Add voters</h2>
+        <p>One student per line: <code>StudentID, Full Name, Section</code> (name and section are optional).</p>
+        <textarea id="voterText" rows="6" placeholder="S101, Juan Dela Cruz, Grade 12-A&#10;S102, Maria Santos, Grade 11-B"></textarea>
+        <button id="addVoters">Add voters and generate codes</button>
+
+        <div id="codesBox" class="hidden">
+          <div class="warn"><strong>These codes are only listed here after adding.</strong> You can view or reset any code later from the voter table below.</div>
+          <button id="printBtn">Print this list</button>
+          <div class="scroll"><table id="codesTable"></table></div>
+        </div>
+
+        <h3 id="voterSummary">Voters</h3>
+        <div class="scroll"><table id="voterTable"></table></div>
+      </div>
+
+      <div class="card">
+        <h2>My account</h2>
+        <section class="admin-profile-summary" aria-label="Admin profile">
+          <div class="admin-profile-heading">
+            <img id="adminProfileCardPhoto" class="admin-profile-avatar" src="/default-avatar.svg" alt="Admin profile picture">
+            <div>
+              <p class="eyebrow">Admin profile</p>
+              <h3 id="adminProfileCardName"></h3>
+              <p id="adminProfileCardRole" class="muted"></p>
+            </div>
+          </div>
+          <div class="candidate-profile-stats" aria-label="Vote totals">
+            <div class="candidate-profile-stat"><strong>0</strong><span>Current votes</span></div>
+            <div class="candidate-profile-stat"><strong>0</strong><span>Party total votes</span></div>
+          </div>
+          <div class="candidate-profile-about">
+            <h3>Bio</h3>
+            <p id="adminProfileCardBio" class="candidate-profile-bio"></p>
+            <h3>Social links</h3>
+            <nav id="adminProfileCardLinks" class="social-links" aria-label="Admin social links"></nav>
+            <p id="adminProfileCardNoLinks" class="muted">No social links added yet.</p>
+          </div>
+        </section>
+        <h3>My profile</h3>
+        <p class="muted">Participants can see this profile in every election directory.</p>
+        <label for="adminProfileDisplayName">Display name</label>
+        <input id="adminProfileDisplayName" maxlength="80" placeholder="How your name appears to participants">
+        <label for="adminProfilePhoto">Upload profile picture (JPEG, PNG, or WebP; max 1 MB)</label>
+        <input id="adminProfilePhoto" type="file" accept="image/jpeg,image/png,image/webp">
+        <button id="removeAdminProfilePhoto" class="secondary" type="button">Use default picture</button>
+        <label for="adminProfileBio">About me</label>
+        <textarea id="adminProfileBio" rows="3" maxlength="500" placeholder="A little about you"></textarea>
+        <label for="adminProfileLinks">Social links (one per line: name | https://...)</label>
+        <textarea id="adminProfileLinks" rows="3" placeholder="LinkedIn | https://linkedin.com/in/yourname"></textarea>
+        <button id="saveAdminProfile">Save profile</button>
+        <p id="adminProfileMessage" class="muted" role="status"></p>
+        <h3>Change password</h3>
+        <input id="cpw" type="password" placeholder="Current password" autocomplete="current-password">
+        <input id="npw" type="password" placeholder="New password (at least 8 characters)" autocomplete="new-password">
+        <input id="npw2" type="password" placeholder="Repeat new password" autocomplete="new-password">
+        <button id="changePw">Change my password</button>
+      </div>
+
+      <div class="card">
+        <h2>Election profiles</h2>
+        <p class="muted">Manage voter and candidate profiles for the selected election.</p>
+        <button id="loadElectionProfiles" class="secondary">Load profiles for selected election</button>
+        <div id="managedProfiles" style="margin-top:1rem"></div>
+      </div>
+
+      <div id="adminsCard" class="card hidden">
+        <h2>Admin accounts (Main Admin only)</h2>
+        <div class="scroll"><table id="adminTable"></table></div>
+        <h3>Add an admin</h3>
+        <div class="row">
+          <input id="au" placeholder="Username" autocomplete="off">
+          <input id="ap" type="password" placeholder="Password (at least 8 characters)" autocomplete="new-password">
+        </div>
+        <button id="addAdmin">Create admin</button>
+      </div>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="/js/profile-photo.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
