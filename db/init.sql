@@ -6,7 +6,22 @@ CREATE TABLE elections (
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','open','closed')),
   show_live_results BOOLEAN NOT NULL DEFAULT TRUE,
   starts_at TIMESTAMPTZ,
-  ends_at TIMESTAMPTZ
+  ends_at TIMESTAMPTZ,
+  logo_data BYTEA,
+  logo_mime TEXT
+);
+
+CREATE TABLE parties (
+  id SERIAL PRIMARY KEY,
+  election_id INT NOT NULL REFERENCES elections(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  logo_url TEXT,
+  logo_data BYTEA,
+  logo_mime TEXT,
+  color TEXT NOT NULL DEFAULT '#1e66f5',
+  platform TEXT,
+  slogan TEXT,
+  UNIQUE (election_id, name)
 );
 
 CREATE TABLE positions (
@@ -23,8 +38,11 @@ CREATE TABLE candidates (
   grade_section TEXT,
   bio TEXT,
   photo_url TEXT,
+  photo_data BYTEA,
+  photo_mime TEXT,
   account_username TEXT,
   account_password_hash TEXT,
+  party_id INT REFERENCES parties(id) ON DELETE SET NULL,
   profile_photo_url TEXT,
   profile_photo_data BYTEA,
   profile_photo_mime TEXT,
@@ -74,10 +92,13 @@ CREATE TABLE votes (
   election_id INT NOT NULL REFERENCES elections(id) ON DELETE CASCADE,
   position_id INT NOT NULL REFERENCES positions(id) ON DELETE CASCADE,
   candidate_id INT NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+  party_id INT REFERENCES parties(id) ON DELETE SET NULL,
   cast_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX idx_votes_candidate ON votes(candidate_id);
+CREATE INDEX idx_votes_party ON votes(party_id);
+CREATE INDEX idx_candidates_party ON candidates(party_id);
 
 -- Session table for connect-pg-simple
 CREATE TABLE "session" (
