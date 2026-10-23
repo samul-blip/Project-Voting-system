@@ -1,21 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vote</title><link rel="stylesheet" href="/css/style.css"></head>
-<body>
-  <header><img id="logo" alt=""><h1 id="election-title">Election</h1></header>
-  <main class="login-main"><div class="card login-card">
-    <p class="eyebrow">Secure student voting</p>
-    <h2>Log in to vote</h2>
-    <p class="login-intro">Use the student ID and voting code provided by your election administrator.</p>
-    <label for="studentId">Student ID</label>
-    <input id="studentId" placeholder="e.g. S101" autocomplete="username" required>
-    <label for="code">Voting code</label>
-    <input id="code" placeholder="Enter your voting code" type="password" autocomplete="current-password" required>
-    <p id="error" class="error"></p>
-    <button id="loginBtn">Continue to vote</button>
-    <p class="muted">Running as a candidate? <a href="/candidate.html">Sign in to your candidate account</a></p>
-  </div></main>
-  <script src="/js/theme.js"></script>
-  <script src="/js/login.js"></script>
-</body></html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171717">
+  <title>Election Portal · Arellano University</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/sign-in.css">
+</head>
+<body class="sign-in-page">
+  <header class="sign-in-header">
+    <a class="sign-in-university" href="/" aria-label="Arellano University Apolinario Mabini Campus election portal">
+      <img class="sign-in-university-logo" src="/assets/au-amc-logo-transparent.png" alt="Arellano University seal">
+      <span class="sign-in-university-copy">
+        <strong>Arellano University — Apolinario Mabini Campus</strong>
+        <span>Election page-portal</span>
+      </span>
+    </a>
+    <img class="sign-in-society-logo" src="/assets/ict-soc-logo.png" alt="ICT Society seal">
+  </header>
+
+  <main class="sign-in-main">
+    <section class="role-panel" aria-labelledby="welcomeHeading">
+      <h1 id="welcomeHeading">Select your account<br>type to continue to</h1>
+      <div class="role-options" aria-label="Choose an account type">
+      <a class="role-card role-voter" href="/voter-login.html">
+        <span class="role-copy">
+          <strong>Voter</strong>
+          <span>Sign in with your student ID and voting code to participate in the election.</span>
+        </span>
+        <span class="role-arrow" aria-hidden="true">›</span>
+      </a>
+
+      <a class="role-card role-candidate" href="/candidate.html">
+        <span class="role-copy">
+          <strong>Candidate</strong>
+          <span>Open your candidate profile, review vote totals, and manage profile details.</span>
+        </span>
+        <span class="role-arrow" aria-hidden="true">›</span>
+      </a>
+
+      <a class="role-card role-admin" href="/admin.html">
+        <span class="role-copy">
+          <strong>Admin</strong>
+          <span>Manage elections, candidates, parties, voters, and results.</span>
+        </span>
+        <span class="role-arrow" aria-hidden="true">›</span>
+      </a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

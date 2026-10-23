@@ -8,16 +8,28 @@ router.use(requireCandidate);
 
 router.get('/me', async (req, res) => {
   const { rows } = await pool.query(
-    `SELECT c.id, c.name, c.grade_section, c.bio, c.photo_url, c.profile_photo_url,
+    `SELECT c.id, c.name, c.grade_section, c.bio,
+            COALESCE(CASE WHEN c.photo_data IS NOT NULL
+              THEN '/api/election/' || e.id::text || '/candidate/' || c.id::text || '/photo'
+            END, c.photo_url) AS photo_url,
+            c.profile_photo_url,
             (c.profile_photo_data IS NOT NULL) AS has_profile_photo,
             c.profile_bio, c.social_links, p.title AS position, e.id AS election_id,
-            e.title AS election_title,
+            e.title AS election_title, pa.id AS party_id, pa.name AS party_name,
+            COALESCE(CASE WHEN pa.logo_data IS NOT NULL
+              THEN '/api/election/' || e.id::text || '/party/' || pa.id::text || '/logo'
+            END, pa.logo_url) AS party_logo_url, pa.color AS party_color,
+            pa.platform AS party_platform, pa.slogan AS party_slogan,
             (SELECT COUNT(*)::int
              FROM votes v
-             WHERE v.candidate_id = c.id AND v.election_id = e.id) AS votes
+             WHERE v.candidate_id = c.id AND v.election_id = e.id) AS votes,
+            (SELECT COUNT(*)::int
+              FROM votes v
+              WHERE v.party_id = pa.id AND v.election_id = e.id) AS party_votes
      FROM candidates c
      JOIN positions p ON p.id = c.position_id
      JOIN elections e ON e.id = p.election_id
+     LEFT JOIN parties pa ON pa.id = c.party_id AND pa.election_id = e.id
      WHERE c.id = $1`,
     [req.candidate.id]);
   if (!rows[0]) return res.status(401).json({ error: 'Please log in again' });

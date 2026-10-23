@@ -4,6 +4,7 @@ const pool = require('../db');
 const { requireAdmin, requireMain } = require('../middleware/auth');
 const { parseProfile } = require('../profile');
 const { uploadAvatarBody, validateAvatar, sendAvatar } = require('../avatar');
+const { getPartyTotals } = require('../party-results');
 
 router.use(requireAdmin);
 
@@ -77,16 +78,17 @@ router.post('/me/password', async (req, res) => {
 router.get('/live/:electionId', async (req, res) => {
   const { rows } = await pool.query(
     `SELECT p.id AS position_id, p.title AS position, c.id AS candidate_id,
-            c.name, COUNT(v.id)::int AS votes
+            c.name, pa.name AS party_name, COUNT(v.id)::int AS votes
      FROM positions p
      JOIN candidates c ON c.position_id = p.id
-     LEFT JOIN votes v ON v.candidate_id = c.id
+     LEFT JOIN parties pa ON pa.id = c.party_id AND pa.election_id = p.election_id
+     LEFT JOIN votes v ON v.candidate_id = c.id AND v.election_id = p.election_id
      WHERE p.election_id = $1
-     GROUP BY p.id, c.id ORDER BY p.sort_order, p.id, c.id`, [req.params.electionId]);
+     GROUP BY p.id, c.id, pa.name ORDER BY p.sort_order, p.id, c.id`, [req.params.electionId]);
   const turnout = (await pool.query(
     `SELECT COUNT(*) FILTER (WHERE has_voted)::int AS voted, COUNT(*)::int AS total
      FROM voters WHERE election_id=$1`, [req.params.electionId])).rows[0];
-  res.json({ rows, turnout });
+  res.json({ rows, turnout, partyTotals: await getPartyTotals(req.params.electionId) });
 });
 
 // ----- Main Admin only -----

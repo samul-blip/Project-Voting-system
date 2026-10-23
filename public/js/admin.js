@@ -18,6 +18,11 @@ function msg(text, isError) {
 function show(which) {   // 'login' | 'setup' | 'app'
   ['loginBox', 'setupBox', 'app'].forEach(id => $(id).classList.add('hidden'));
   $(which === 'app' ? 'app' : which + 'Box').classList.remove('hidden');
+  const isAuth = which !== 'app';
+  document.body.classList.toggle('sign-in-page', isAuth);
+  $('adminAuthHeader').classList.toggle('hidden', !isAuth);
+  document.querySelector('.admin-header').classList.toggle('hidden', isAuth);
+  $('adminMain').classList.toggle('admin-auth-main', isAuth);
 }
 
 async function call(url, method = 'GET', body) {
@@ -36,6 +41,55 @@ const acct = (p, m, b) => call('/api/admins' + p, m, b);
 
 async function run(fn) {
   try { await fn(); } catch (err) { msg(err.message, true); }
+}
+
+function selectedImage(input) {
+  const file = input.files[0];
+  if (!file) return null;
+  if (!['image/jpeg', 'image/png'].includes(file.type)) {
+    input.value = '';
+    throw new Error('Choose a JPEG or PNG image');
+  }
+  if (file.size > 25 * 1024 * 1024) {
+    input.value = '';
+    throw new Error('Image must be no larger than 25 MB');
+  }
+  return file;
+}
+
+async function uploadLocalImage(file, url, preview) {
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': file.type },
+    body: file
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Upload failed (${res.status})`);
+  if (preview) {
+    preview.src = `${data.url || url}?v=${Date.now()}`;
+    preview.hidden = false;
+  }
+}
+
+function previewSelectedFile(input, image) {
+  const previous = image.dataset.objectUrl;
+  if (previous) URL.revokeObjectURL(previous);
+  delete image.dataset.objectUrl;
+  const file = selectedImage(input);
+  if (!file) {
+    setImagePreview(image, '');
+    return;
+  }
+  const objectUrl = URL.createObjectURL(file);
+  image.dataset.objectUrl = objectUrl;
+  setImagePreview(image, objectUrl);
+}
+
+function setImagePreview(image, url) {
+  image.onerror = () => { image.hidden = true; };
+  image.onload = () => { image.hidden = false; };
+  image.src = url || '';
+  image.hidden = !url;
 }
 
 // ---------- Setup, login, logout ----------
@@ -126,8 +180,8 @@ $('loadElectionProfiles').addEventListener('click', () => run(async () => {
         <span class="pill">${esc(p.type)}</span>
         <h3>${esc(p.name)}</h3>
         <img class="profile-editor-avatar" data-field="avatar-preview" alt="Profile picture preview">
-        <label>Upload profile picture (JPEG, PNG, or WebP; max 1 MB)</label>
-        <input data-field="avatar" type="file" accept="image/jpeg,image/png,image/webp">
+        <label>Upload profile picture (JPEG or PNG; max 25 MB)</label>
+        <input data-field="avatar" type="file" accept="image/jpeg,image/png">
         <button class="secondary" type="button" data-avatar-remove>Use default picture</button>
         <p class="muted" data-field="avatar-message" role="status"></p>
         <label>Bio</label>
@@ -206,14 +260,22 @@ function resetCharts() {
   charts = {};
   $('liveCharts').innerHTML = '';
   $('turnout').textContent = '';
+  $('partyTotals').replaceChildren();
 }
 
 async function loadLive() {
   const id = currentId;
   if (!id) return;
-  const { rows, turnout } = await acct('/live/' + id);
+  const { rows, turnout, partyTotals = [] } = await acct('/live/' + id);
   if (id !== currentId) return;       // election changed while loading
   $('turnout').textContent = `Turnout: ${turnout.voted} / ${turnout.total} students`;
+  $('partyTotals').innerHTML = partyTotals.length
+    ? `<h3>Party totals <small class="muted">(votes across positions)</small></h3>
+       <div class="scroll"><table><tr><th>Party</th><th>Total</th><th>By position</th></tr>
+       ${partyTotals.map(p => `<tr><td>${esc(p.name)}</td><td>${p.total_votes}</td>
+         <td>${p.positions.map(position => `${esc(position.position)}: ${position.votes}`).join(' · ') || 'No positions'}</td></tr>`).join('')}
+       </table></div>`
+    : '';
 
   const byPosition = {};
   rows.forEach(r => (byPosition[r.position_id] ??= { title: r.position, items: [] }).items.push(r));
@@ -223,7 +285,7 @@ async function loadLive() {
   });
 
   for (const [pid, p] of Object.entries(byPosition)) {
-    const labels = p.items.map(i => i.name);
+    const labels = p.items.map(i => i.party_name ? `${i.name} (${i.party_name})` : `${i.name} (Independent)`);
     const data = p.items.map(i => i.votes);
     if (charts[pid]) {
       charts[pid].data.labels = labels;
@@ -259,6 +321,9 @@ async function loadElections(selectId) {
   currentId = selectId || currentId || list[0].id;
   if (!list.some(e => e.id == currentId)) currentId = list[0].id;
   sel.value = currentId;
+  const selected = list.find(e => e.id == currentId);
+  setImagePreview($('electionLogoPreview'), selected?.theme?.logo || '');
+  $('removeElectionLogo').hidden = !selected?.theme?.logo;
 }
 
 $('electionSelect').addEventListener('change', e => run(async () => {
@@ -272,17 +337,45 @@ $('electionSelect').addEventListener('change', e => run(async () => {
 $('createElection').addEventListener('click', () => run(async () => {
   const title = $('eTitle').value.trim();
   if (!title) throw new Error('Enter an election title');
+  const logo = selectedImage($('eCreateLogo'));
   const created = await api('/elections', 'POST', {
     title,
     description: $('eDesc').value.trim(),
-    theme: { primary: $('ePrimary').value, accent: $('eAccent').value, logo: $('eLogo').value.trim() }
+    theme: { primary: $('ePrimary').value, accent: $('eAccent').value, logo: '' }
   });
-  ['eTitle', 'eDesc', 'eLogo'].forEach(id => $(id).value = '');
+  ['eTitle', 'eDesc'].forEach(id => $(id).value = '');
+  $('eCreateLogo').value = '';
+  previewSelectedFile($('eCreateLogo'), $('eCreateLogoPreview'));
+  setImagePreview($('eCreateLogoPreview'), '');
+  if (logo) await uploadLocalImage(logo, `/api/admin/elections/${created.id}/logo`, $('electionLogoPreview'));
   await loadElections(created.id);
   resetCharts();
   await refresh();
   await loadLive();
   msg('Election created. Add positions, candidates and voters, then open voting.');
+}));
+
+$('eCreateLogo').addEventListener('change', () => run(async () => previewSelectedFile($('eCreateLogo'), $('eCreateLogoPreview'))));
+$('partyLogo').addEventListener('change', () => run(async () => previewSelectedFile($('partyLogo'), $('partyLogoPreview'))));
+$('candPhoto').addEventListener('change', () => run(async () => previewSelectedFile($('candPhoto'), $('candPhotoPreview'))));
+
+$('electionLogoUpload').addEventListener('change', () => run(async () => {
+  if (!currentId) throw new Error('Create or select an election first');
+  const file = selectedImage($('electionLogoUpload'));
+  if (!file) return;
+  await uploadLocalImage(file, `/api/admin/elections/${currentId}/logo`, $('electionLogoPreview'));
+  $('electionLogoUpload').value = '';
+  $('removeElectionLogo').hidden = false;
+  msg('Election logo uploaded');
+}));
+
+$('removeElectionLogo').addEventListener('click', () => run(async () => {
+  if (!currentId) return;
+  await api(`/elections/${currentId}/logo`, 'DELETE');
+  $('electionLogoUpload').value = '';
+  setImagePreview($('electionLogoPreview'), '');
+  $('removeElectionLogo').hidden = true;
+  msg('Election logo removed');
 }));
 
 async function setStatus(status) {
@@ -317,6 +410,8 @@ $('btnDelete').addEventListener('click', () => run(async () => {
     $('statusBadge').className = 'badge';
     $('candPosition').innerHTML = '<option value="">(create an election first)</option>';
     $('candList').innerHTML = '';
+    $('partyList').innerHTML = '';
+    $('candParty').innerHTML = '<option value="">Independent / no party</option>';
     $('voterTable').innerHTML = '';
     $('voterSummary').textContent = 'Voters';
   }
@@ -343,21 +438,102 @@ $('addCandidate').addEventListener('click', () => run(async () => {
   if (!positionId) throw new Error('Add a position first');
   if (!name) throw new Error('Enter the candidate name');
   if (!username || !password) throw new Error('Enter a candidate account username and password');
-  await api(`/positions/${positionId}/candidates`, 'POST', {
+  const photo = selectedImage($('candPhoto'));
+  const created = await api(`/positions/${positionId}/candidates`, 'POST', {
     name,
     grade_section: $('candGrade').value.trim(),
+    party_id: $('candParty').value || null,
     bio: $('candBio').value.trim(),
-    photo_url: $('candPhoto').value.trim(),
     account_username: username,
     account_password: password
   });
-  ['candName', 'candGrade', 'candBio', 'candPhoto', 'candUsername', 'candPassword'].forEach(id => $(id).value = '');
+  if (photo) await uploadLocalImage(photo, `/api/admin/candidates/${created.id}/photo`);
+  ['candParty', 'candName', 'candGrade', 'candBio', 'candPhoto', 'candUsername', 'candPassword'].forEach(id => $(id).value = '');
+  previewSelectedFile($('candPhoto'), $('candPhotoPreview'));
   await refresh();
   await loadLive();
   msg('Candidate added');
 }));
 
+$('createParty').addEventListener('click', () => run(async () => {
+  if (!currentId) throw new Error('Create an election first');
+  const logo = selectedImage($('partyLogo'));
+  const created = await api(`/elections/${currentId}/parties`, 'POST', {
+    name: $('partyName').value.trim(),
+    platform: $('partyPlatform').value.trim(),
+    slogan: $('partySlogan').value.trim(),
+    color: $('partyColor').value
+  });
+  if (logo) await uploadLocalImage(logo, `/api/admin/parties/${created.id}/logo`);
+  ['partyName', 'partyPlatform', 'partySlogan', 'partyLogo'].forEach(id => $(id).value = '');
+  previewSelectedFile($('partyLogo'), $('partyLogoPreview'));
+  $('partyColor').value = '#1e66f5';
+  await refresh();
+  msg('Party created');
+}));
+
+$('partyList').addEventListener('click', e => run(async () => {
+  const button = e.target.closest('button[data-party-action]');
+  if (!button) return;
+  const card = button.closest('[data-party-id]');
+  const id = card.dataset.partyId;
+  if (button.dataset.partyAction === 'remove-logo') {
+    await api(`/parties/${id}/logo`, 'DELETE');
+    await refresh();
+    msg('Party logo removed');
+  } else if (button.dataset.partyAction === 'save') {
+    await api(`/parties/${id}`, 'PUT', {
+      name: card.querySelector('[data-party-name]').value.trim(),
+      platform: card.querySelector('[data-party-platform]').value.trim(),
+      slogan: card.querySelector('[data-party-slogan]').value.trim(),
+      color: card.querySelector('[data-party-color]').value
+    });
+    await refresh();
+    msg('Party saved');
+  } else if (button.dataset.partyAction === 'delete') {
+    if (!confirm('Delete this party? Candidates will become independent. Parties with recorded votes cannot be deleted.')) return;
+    await api(`/parties/${id}`, 'DELETE');
+    await refresh();
+    msg('Party deleted');
+  }
+}));
+
+$('partyList').addEventListener('change', e => run(async () => {
+  const input = e.target.closest('input[data-party-logo]');
+  if (!input || !input.files.length) return;
+  const file = selectedImage(input);
+  const card = input.closest('[data-party-id]');
+  await uploadLocalImage(file, `/api/admin/parties/${card.dataset.partyId}/logo`, card.querySelector('[data-party-preview]'));
+  await refresh();
+  msg('Party logo uploaded');
+}));
+
+$('candList').addEventListener('change', e => run(async () => {
+  const input = e.target.closest('input[data-candidate-photo]');
+  if (!input || !input.files.length) return;
+  const file = selectedImage(input);
+  await uploadLocalImage(file, `/api/admin/candidates/${input.dataset.candidatePhoto}/photo`,
+    input.closest('li').querySelector('[data-candidate-photo-preview]'));
+  await refresh();
+  msg('Candidate photo uploaded');
+}));
+
+$('candList').addEventListener('change', e => run(async () => {
+  const select = e.target.closest('select[data-candidate-party]');
+  if (!select) return;
+  await api(`/candidates/${select.dataset.candidateParty}/party`, 'PUT', { party_id: select.value || null });
+  await refresh();
+  msg('Candidate party updated');
+}));
+
 $('candList').addEventListener('click', e => run(async () => {
+  const photoRemove = e.target.closest('button[data-candidate-photo-remove]');
+  if (photoRemove) {
+    await api(`/candidates/${photoRemove.dataset.candidatePhotoRemove}/photo`, 'DELETE');
+    await refresh();
+    msg('Candidate photo removed');
+    return;
+  }
   const accountBtn = e.target.closest('button[data-account-save]');
   if (accountBtn) {
     const candidateRow = accountBtn.closest('li');
@@ -409,6 +585,41 @@ $('addVoters').addEventListener('click', () => run(async () => {
 
 $('printBtn').addEventListener('click', () => window.print());
 
+function updateVoterSelection() {
+  const checkboxes = [...$('voterTable').querySelectorAll('input[data-voter-select]')];
+  const eligible = checkboxes.filter(checkbox => !checkbox.disabled);
+  const selected = eligible.filter(checkbox => checkbox.checked).length;
+  const selectAll = $('selectAllVoters');
+  selectAll.disabled = eligible.length === 0;
+  selectAll.checked = eligible.length > 0 && selected === eligible.length;
+  selectAll.indeterminate = selected > 0 && selected < eligible.length;
+  $('selectedVoterCount').textContent = selected;
+  $('deleteSelectedVoters').disabled = selected === 0;
+}
+
+$('selectAllVoters').addEventListener('change', () => {
+  const checked = $('selectAllVoters').checked;
+  $('voterTable').querySelectorAll('input[data-voter-select]:not(:disabled)')
+    .forEach(checkbox => { checkbox.checked = checked; });
+  updateVoterSelection();
+});
+
+$('voterTable').addEventListener('change', e => {
+  if (e.target.matches('input[data-voter-select]')) updateVoterSelection();
+});
+
+$('deleteSelectedVoters').addEventListener('click', () => run(async () => {
+  if (!currentId) throw new Error('Select an election first');
+  const ids = [...$('voterTable').querySelectorAll('input[data-voter-select]:checked:not(:disabled)')]
+    .map(checkbox => Number(checkbox.value));
+  if (!ids.length) return;
+  if (!confirm(`Delete ${ids.length} selected voter${ids.length === 1 ? '' : 's'}? This cannot be undone.`)) return;
+  const result = await api(`/elections/${currentId}/voters`, 'DELETE', { ids });
+  await refresh();
+  await loadLive();
+  msg(`${result.deleted} voter${result.deleted === 1 ? '' : 's'} deleted`);
+}));
+
 $('voterTable').addEventListener('click', e => run(async () => {
   const btn = e.target.closest('button[data-action]');
   if (!btn) return;
@@ -438,11 +649,11 @@ $('voterTable').addEventListener('click', e => run(async () => {
 // ---------- Rendering ----------
 async function refresh() {
   if (!currentId) return;
-  const [election, voters] = await Promise.all([
+  const [election, voters, parties] = await Promise.all([
     fetch('/api/election/' + currentId).then(r => r.json()),
-    api(`/elections/${currentId}/voters`)
+    api(`/elections/${currentId}/voters`),
+    api(`/elections/${currentId}/parties`)
   ]);
-
   const badge = $('statusBadge');
   badge.textContent = election.status;
   badge.className = 'badge ' + election.status;
@@ -451,6 +662,26 @@ async function refresh() {
   $('candPosition').innerHTML = positions.length
     ? positions.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')
     : '<option value="">(add a position first)</option>';
+  $('candParty').innerHTML = '<option value="">Independent / no party</option>' +
+    parties.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  $('partyList').innerHTML = parties.length
+    ? parties.map(p => `<article class="party-admin-card" data-party-id="${p.id}">
+        <img class="upload-preview" data-party-preview alt="Party logo preview" hidden>
+        <label>Party name <input data-party-name maxlength="80" value="${esc(p.name)}"></label>
+        <label>Platform / ideas <textarea data-party-platform rows="3" maxlength="2000">${esc(p.platform || '')}</textarea></label>
+        <label>Slogan <input data-party-slogan maxlength="160" value="${esc(p.slogan || '')}"></label>
+        <label>Color <input data-party-color type="color" value="${esc(p.color)}"></label>
+        <label>Logo (PNG or JPEG, max 25 MB) <input data-party-logo type="file" accept="image/png,image/jpeg"></label>
+        <p class="muted">${p.candidate_count} candidate(s)</p>
+        <div class="btns"><button data-party-action="save">Save party</button>
+          <button class="secondary" data-party-action="remove-logo">Remove logo</button>
+          <button class="danger" data-party-action="delete">Delete party</button></div>
+      </article>`).join('')
+    : '<p class="muted">No parties created for this election yet.</p>';
+  $('partyList').querySelectorAll('[data-party-id]').forEach(card => {
+    const party = parties.find(item => String(item.id) === card.dataset.partyId);
+    setImagePreview(card.querySelector('[data-party-preview]'), party?.logo_url || '');
+  });
 
   $('candList').innerHTML = positions.length
     ? positions.map(p => `
@@ -461,6 +692,17 @@ async function refresh() {
         ${p.candidates.length
           ? '<ul>' + p.candidates.map(c => `
               <li>${esc(c.name)} ${c.grade_section ? '(' + esc(c.grade_section) + ')' : ''}
+                <img class="upload-preview candidate-photo-preview" data-candidate-photo-preview alt="Candidate photo preview" hidden>
+                <label>Candidate photo (PNG or JPEG, max 25 MB)
+                  <input data-candidate-photo="${c.id}" type="file" accept="image/png,image/jpeg">
+                </label>
+                <button class="small secondary" data-candidate-photo-remove="${c.id}">Remove candidate photo</button>
+                <label>Party
+                  <select data-candidate-party="${c.id}">
+                    <option value="">Independent / no party</option>
+                    ${parties.map(p => `<option value="${p.id}" ${String(c.party_id || '') === String(p.id) ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}
+                  </select>
+                </label>
                 <details class="candidate-account">
                   <summary>Set candidate login</summary>
                   <label>Username <input data-account-username autocomplete="off"></label>
@@ -471,12 +713,22 @@ async function refresh() {
               </li>`).join('') + '</ul>'
           : '<p><em>No candidates yet</em></p>'}`).join('')
     : '<p><em>No positions yet</em></p>';
+  $('candList').querySelectorAll('li').forEach(row => {
+    const fileInput = row.querySelector('[data-candidate-photo]');
+    if (!fileInput) return;
+    const candidateId = fileInput.dataset.candidatePhoto;
+    const candidate = positions.flatMap(position => position.candidates).find(item => String(item.id) === candidateId);
+    setImagePreview(row.querySelector('[data-candidate-photo-preview]'), candidate?.photo_url || '');
+  });
 
   const voted = voters.filter(v => v.has_voted).length;
   $('voterSummary').textContent = `Voters (${voted} of ${voters.length} have voted)`;
   $('voterTable').innerHTML = voters.length
-    ? '<tr><th>Student ID</th><th>Name</th><th>Section</th><th>Voted?</th><th>Code</th></tr>' +
+    ? '<tr><th><span class="sr-only">Select</span></th><th>Student ID</th><th>Name</th><th>Section</th><th>Voted?</th><th>Code</th></tr>' +
       voters.map(v => `<tr>
+        <td><input type="checkbox" data-voter-select value="${v.id}"
+          aria-label="Select voter ${esc(v.student_id)}"
+          ${v.has_voted ? 'disabled title="Voters who have voted cannot be deleted"' : ''}></td>
         <td>${esc(v.student_id)}</td><td>${esc(v.full_name)}</td>
         <td><input data-voter-section aria-label="Section for ${esc(v.student_id)}" value="${esc(v.grade_section)}">
           <button class="small secondary" data-action="save-section" data-id="${v.id}">Save</button></td>
@@ -487,6 +739,7 @@ async function refresh() {
           <button class="small secondary" data-action="remove" data-id="${v.id}">Remove</button>`}
         </td></tr>`).join('')
     : '<tr><td><em>No voters yet</em></td></tr>';
+  updateVoterSelection();
 }
 
 // ---------- Start ----------

@@ -90,9 +90,14 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&l
     p.candidates.forEach(c => {
       const el = document.createElement('div');
       el.className = 'candidate';
+      const partyColor = /^#[0-9a-f]{6}$/i.test(c.party_color || '') ? c.party_color : '#1e66f5';
       el.innerHTML = `
         ${c.photo_url ? `<img src="${esc(c.photo_url)}" alt="">` : ''}
-        <h3>${esc(c.name)}</h3><p>${esc(c.grade_section || '')}</p><small>${esc(c.bio || '')}</small>`;
+        <h3>${esc(c.name)}</h3>
+        ${c.party_name ? `${c.party_logo_url ? `<img class="party-logo" src="${esc(c.party_logo_url)}" alt="">` : ''}<span class="party-badge" style="--party-color:${partyColor}">${esc(c.party_name)}</span>` : '<span class="party-independent">Independent</span>'}
+        ${c.party_slogan ? `<p class="party-slogan">${esc(c.party_slogan)}</p>` : ''}
+        ${c.party_platform ? `<small class="party-platform">${esc(c.party_platform)}</small>` : ''}
+        <p>${esc(c.grade_section || '')}</p><small>${esc(c.bio || '')}</small>`;
       el.onclick = () => {
         list.querySelectorAll('.candidate').forEach(x => x.classList.remove('selected'));
         el.classList.add('selected');
@@ -100,6 +105,9 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&l
         submitBtn.disabled = Object.keys(choices).length !== e.positions.length;
       };
       list.appendChild(el);
+    });
+    list.querySelectorAll('.party-logo').forEach(image => {
+      image.onerror = () => image.remove();
     });
     $('positions').appendChild(card);
   });

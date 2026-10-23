@@ -20,9 +20,13 @@ function escapeHtml(s) {
     p.candidates.forEach(c => {
       const el = document.createElement('div');
       el.className = 'candidate';
+      const partyColor = /^#[0-9a-f]{6}$/i.test(c.party_color || '') ? c.party_color : '#1e66f5';
       el.innerHTML = `
         ${c.photo_url ? `<img src="${escapeHtml(c.photo_url)}" alt="">` : ''}
         <h3>${escapeHtml(c.name)}</h3>
+        ${c.party_name ? `${c.party_logo_url ? `<img class="party-logo" src="${escapeHtml(c.party_logo_url)}" alt="">` : ''}<span class="party-badge" style="--party-color:${partyColor}">${escapeHtml(c.party_name)}</span>` : '<span class="party-independent">Independent</span>'}
+        ${c.party_slogan ? `<p class="party-slogan">${escapeHtml(c.party_slogan)}</p>` : ''}
+        ${c.party_platform ? `<small class="party-platform">${escapeHtml(c.party_platform)}</small>` : ''}
         <p>${escapeHtml(c.grade_section || '')}</p>
         <small>${escapeHtml(c.bio || '')}</small>`;
       el.onclick = () => {
@@ -32,6 +36,9 @@ function escapeHtml(s) {
         submitBtn.disabled = Object.keys(choices).length !== e.positions.length;
       };
       list.appendChild(el);
+    });
+    list.querySelectorAll('.party-logo').forEach(image => {
+      image.onerror = () => image.remove();
     });
     container.appendChild(card);
   });

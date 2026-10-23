@@ -28,6 +28,8 @@ app.use(session({
   cookie: { httpOnly: true, sameSite: 'lax', maxAge: 30 * 60 * 1000 } // 30 min
 }));
 
+app.get('/', (req, res) =>
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html')));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.use('/api/auth', require('./routes/auth'));
