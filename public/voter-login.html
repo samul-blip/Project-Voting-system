@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171717">
+  <title>Voter sign in · Arellano University</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/sign-in.css">
+</head>
+<body class="sign-in-page voter-sign-in-page">
+  <header class="sign-in-header">
+    <a class="sign-in-university" href="/" aria-label="Arellano University Apolinario Mabini Campus election portal">
+      <img class="sign-in-university-logo" src="/assets/au-amc-logo-transparent.png" alt="Arellano University seal">
+      <span class="sign-in-university-copy">
+        <strong>Arellano University — Apolinario Mabini Campus</strong>
+        <span>Election page — <span id="election-title">Current election display</span></span>
+      </span>
+    </a>
+    <img class="sign-in-society-logo" src="/assets/ict-soc-logo.png" alt="ICT Society seal">
+  </header>
+
+  <main class="sign-in-main voter-sign-in-main">
+    <section class="voter-login-panel" aria-labelledby="voterLoginHeading">
+      <div class="voter-login-intro">
+        <h1 id="voterLoginHeading">Voters login</h1>
+        <p>Use the student ID and voting code<br class="voter-login-wide-break"> provided by your election administrator.</p>
+      </div>
+
+      <div class="voter-login-form">
+        <label for="studentId">Student ID</label>
+        <input id="studentId" placeholder="Ex. 136716140161" autocomplete="username" required>
+        <label for="code">Voting code</label>
+        <input id="code" placeholder="Ex. AETYH" type="password" autocomplete="current-password" required>
+        <p id="error" class="voter-login-error" role="alert" aria-live="polite"></p>
+        <div class="voter-login-actions">
+          <button id="loginBtn" type="button">Continue to vote</button>
+          <a href="/">Back to portal</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="/js/theme.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>

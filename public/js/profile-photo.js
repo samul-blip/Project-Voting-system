@@ -13,14 +13,14 @@ function bindProfilePhoto({ input, image, uploadUrl, deleteUrl, message, initial
   input.addEventListener('change', async () => {
     const file = input.files[0];
     if (!file) return;
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
       input.value = '';
-      message.textContent = 'Choose a JPEG, PNG, or WebP image.';
+      message.textContent = 'Choose a JPEG or PNG image.';
       return;
     }
-    if (file.size > 1024 * 1024) {
+    if (file.size > 25 * 1024 * 1024) {
       input.value = '';
-      message.textContent = 'Profile pictures must be 1 MB or smaller.';
+      message.textContent = 'Profile pictures must be 25 MB or smaller.';
       return;
     }
 

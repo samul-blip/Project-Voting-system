@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin</title>
+  <meta name="theme-color" content="#171717">
+  <title>Admin · Arellano University</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/sign-in.css">
   <style>
     @media print {
       body * { visibility:hidden; }
@@ -14,48 +17,108 @@
     }
   </style>
 </head>
-<body>
-  <header><h1>Election Admin</h1></header>
-  <main>
+<body class="admin-page sign-in-page">
+  <header id="adminAuthHeader" class="sign-in-header admin-auth-header">
+    <a class="sign-in-university" href="/" aria-label="Arellano University Apolinario Mabini Campus election portal">
+      <img class="sign-in-university-logo" src="/assets/au-amc-logo-transparent.png" alt="Arellano University seal">
+      <span class="sign-in-university-copy">
+        <strong>Arellano University — Apolinario Mabini Campus</strong>
+        <span>Election page — Admin workspace</span>
+      </span>
+    </a>
+    <img class="sign-in-society-logo" src="/assets/ict-soc-logo.png" alt="ICT Society seal">
+  </header>
+  <header class="admin-header hidden">
+    <div class="admin-brand">
+      <span class="admin-brand-mark" aria-hidden="true">VS</span>
+      <div>
+        <p class="admin-header-kicker">Voting system</p>
+        <h1>Election Admin</h1>
+      </div>
+    </div>
+    <span class="admin-header-label">Administration workspace</span>
+  </header>
+  <main id="adminMain" class="admin-auth-main">
     <div id="msg" class="hidden"></div>
 
     <!-- First-time setup: Main Admin -->
     <div id="setupBox" class="card hidden">
+      <p class="eyebrow">Administrator setup</p>
       <h2>First-time setup</h2>
       <p>Create the <strong>Main Admin</strong> account. Only this account can create or delete other admins.</p>
+      <label for="su">Username</label>
       <input id="su" placeholder="Username" autocomplete="username">
+      <label for="sp1">Password</label>
       <input id="sp1" type="password" placeholder="Password (at least 8 characters)" autocomplete="new-password">
+      <label for="sp2">Confirm password</label>
       <input id="sp2" type="password" placeholder="Repeat password" autocomplete="new-password">
+      <p class="login-return"><a href="/">← Back to account type selection</a></p>
       <button id="setupBtn">Create Main Admin</button>
     </div>
 
     <!-- Login -->
-    <div id="loginBox" class="card hidden">
-      <h2>Admin login</h2>
-      <input id="lu" placeholder="Username" autocomplete="username">
-      <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
-      <button id="loginBtn">Log in</button>
+    <div id="loginBox" class="admin-login-panel hidden" aria-labelledby="adminLoginHeading">
+      <div class="admin-login-intro">
+        <h2 id="adminLoginHeading">Admin login</h2>
+        <p>Sign in to manage elections and voter<br class="admin-login-wide-break"> accounts.</p>
+      </div>
+      <div class="admin-login-form">
+        <label for="lu">Username</label>
+        <input id="lu" placeholder="Username" autocomplete="username">
+        <label for="pw">Password</label>
+        <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+        <div class="admin-login-actions">
+          <button id="loginBtn" type="button">Continue to login</button>
+          <a href="/">Back to portal</a>
+        </div>
+      </div>
     </div>
 
     <!-- Dashboard -->
-    <div id="app" class="hidden">
+    <div id="app" class="admin-dashboard hidden">
 
-      <div class="card">
-        <div class="btns" style="justify-content:space-between">
-          <span>Logged in as <strong id="whoami"></strong></span>
+      <div class="card admin-session">
+        <div class="admin-session-label">
+          <span class="admin-session-icon" aria-hidden="true">A</span>
+          <span><span class="admin-overline">Signed in</span><strong id="whoami"></strong></span>
+        </div>
+        <div class="btns">
           <button id="logoutBtn" class="secondary">Log out</button>
         </div>
       </div>
 
-      <div class="card">
-        <h2>Election</h2>
+      <nav class="admin-navigation" aria-label="Admin sections">
+        <a href="#electionPanel">Election</a>
+        <a href="#resultsPanel">Results</a>
+        <a href="#positionsPanel">Positions</a>
+        <a href="#partiesPanel">Parties</a>
+        <a href="#candidatesPanel">Candidates</a>
+        <a href="#votersPanel">Voters</a>
+        <a href="#accountPanel">My account</a>
+        <a href="#profilesPanel">Profiles</a>
+      </nav>
+
+      <div class="card admin-section admin-election" id="electionPanel">
+        <div class="admin-section-heading">
+          <div><p class="admin-overline">Election setup</p><h2>Election</h2></div>
+          <span class="admin-section-icon" aria-hidden="true">01</span>
+        </div>
+        <label for="electionSelect">Manage election</label>
         <select id="electionSelect"></select>
-        <div class="btns">
-          <span>Status: <span id="statusBadge" class="badge">-</span></span>
+        <div class="admin-election-actions">
+          <div class="admin-election-status"><span>Status</span><span id="statusBadge" class="badge">-</span></div>
+          <div class="btns">
           <button id="btnDraft" class="secondary">Set to draft</button>
           <button id="btnOpen">Open voting</button>
           <button id="btnClose" class="secondary">Close voting</button>
           <button id="btnDelete" class="danger">Delete election</button>
+          </div>
+        </div>
+        <div class="admin-logo-upload">
+        <label for="electionLogoUpload">Election logo (PNG or JPEG, max 25 MB)</label>
+        <input id="electionLogoUpload" type="file" accept="image/png,image/jpeg">
+        <img id="electionLogoPreview" class="upload-preview" alt="Election logo preview" hidden>
+        <button id="removeElectionLogo" class="secondary" type="button" hidden>Remove election logo</button>
         </div>
         <details style="margin-top:1rem">
           <summary><strong>Create a new election</strong></summary>
@@ -66,33 +129,75 @@
               <label>Primary color <input id="ePrimary" type="color" value="#1e66f5"></label>
               <label>Accent color <input id="eAccent" type="color" value="#f5a623"></label>
             </div>
-            <input id="eLogo" placeholder="Logo URL (optional)">
+            <label for="eCreateLogo">Election logo (PNG or JPEG, max 25 MB)</label>
+            <input id="eCreateLogo" type="file" accept="image/png,image/jpeg">
+            <img id="eCreateLogoPreview" class="upload-preview" alt="New election logo preview" hidden>
             <button id="createElection">Create election</button>
           </div>
         </details>
       </div>
 
-      <div class="card">
-        <h2>Live results</h2>
-        <p id="turnout"></p>
+      <div class="card admin-section admin-results" id="resultsPanel">
+        <div class="admin-section-heading">
+          <div><p class="admin-overline">Election overview</p><h2>Live results</h2></div>
+          <span class="admin-live-indicator"><span></span> Live</span>
+        </div>
+        <p id="turnout" class="admin-turnout"></p>
+        <div id="partyTotals"></div>
         <div id="liveCharts" class="charts"></div>
       </div>
 
-      <div class="card">
-        <h2>Positions</h2>
+      <div class="card admin-section admin-positions" id="positionsPanel">
+        <div class="admin-section-heading">
+          <div><p class="admin-overline">Ballot structure</p><h2>Positions</h2></div>
+          <span class="admin-section-icon" aria-hidden="true">02</span>
+        </div>
         <div class="row">
           <input id="posTitle" placeholder="Position title (e.g. President)">
           <button id="addPosition">Add position</button>
         </div>
       </div>
 
-      <div class="card">
-        <h2>Add a candidate</h2>
+      <section class="card admin-section admin-parties" id="partiesPanel">
+        <div class="admin-section-heading">
+          <div><p class="admin-overline">Candidate teams</p><h2>Parties</h2></div>
+          <span class="admin-section-icon" aria-hidden="true">03</span>
+        </div>
+        <p class="muted">Create election teams with a shared name, color, slogan, and platform. Financial costs are not tracked.</p>
+        <div class="party-editor">
+          <label for="partyName">Party name</label>
+          <input id="partyName" maxlength="80" placeholder="e.g. Student First">
+          <label for="partyPlatform">Cause / platform / ideas</label>
+          <textarea id="partyPlatform" rows="3" maxlength="2000" placeholder="What does this team stand for?"></textarea>
+          <label for="partySlogan">Slogan (optional)</label>
+          <input id="partySlogan" maxlength="160" placeholder="A short campaign slogan">
+          <div class="row">
+            <label for="partyColor">Party color</label>
+            <input id="partyColor" type="color" value="#1e66f5">
+          </div>
+          <label for="partyLogo">Party logo (PNG or JPEG, max 25 MB)</label>
+          <input id="partyLogo" type="file" accept="image/png,image/jpeg">
+          <img id="partyLogoPreview" class="upload-preview" alt="New party logo preview" hidden>
+          <button id="createParty">Create party</button>
+        </div>
+        <h3>Current parties</h3>
+        <div id="partyList" class="party-list"></div>
+      </section>
+
+      <div class="card admin-section admin-candidates" id="candidatesPanel">
+        <div class="admin-section-heading">
+          <div><p class="admin-overline">Ballot management</p><h2>Add a candidate</h2></div>
+          <span class="admin-section-icon" aria-hidden="true">04</span>
+        </div>
         <select id="candPosition"></select>
+        <label for="candParty">Party</label>
+        <select id="candParty"><option value="">Independent / no party</option></select>
         <input id="candName" placeholder="Candidate name">
         <input id="candGrade" placeholder="Grade / section (e.g. Grade 12-A)">
         <input id="candBio" placeholder="Short bio (optional)">
-        <input id="candPhoto" placeholder="Photo URL (optional)">
+        <label for="candPhoto">Candidate photo (PNG or JPEG, max 25 MB)</label>
+        <input id="candPhoto" type="file" accept="image/png,image/jpeg">
+        <img id="candPhotoPreview" class="upload-preview" alt="New candidate photo preview" hidden>
         <label for="candUsername">Candidate account username</label>
         <input id="candUsername" placeholder="Username (3-32 letters, numbers, . _ -)" autocomplete="off">
         <label for="candPassword">Candidate account password</label>
@@ -102,8 +207,11 @@
         <div id="candList"></div>
       </div>
 
-      <div class="card">
-        <h2>Add voters</h2>
+      <div class="card admin-section admin-voters" id="votersPanel">
+        <div class="admin-section-heading">
+          <div><p class="admin-overline">Voter roll</p><h2>Add voters</h2></div>
+          <span class="admin-section-icon" aria-hidden="true">05</span>
+        </div>
         <p>One student per line: <code>StudentID, Full Name, Section</code> (name and section are optional).</p>
         <textarea id="voterText" rows="6" placeholder="S101, Juan Dela Cruz, Grade 12-A&#10;S102, Maria Santos, Grade 11-B"></textarea>
         <button id="addVoters">Add voters and generate codes</button>
@@ -115,11 +223,20 @@
         </div>
 
         <h3 id="voterSummary">Voters</h3>
+        <div class="btns voter-selection-controls">
+          <label><input id="selectAllVoters" type="checkbox"> Select all eligible voters</label>
+          <button id="deleteSelectedVoters" class="danger" type="button" disabled>
+            Delete selected (<span id="selectedVoterCount">0</span>)
+          </button>
+        </div>
         <div class="scroll"><table id="voterTable"></table></div>
       </div>
 
-      <div class="card">
-        <h2>My account</h2>
+      <div class="card admin-section admin-account" id="accountPanel">
+        <div class="admin-section-heading">
+          <div><p class="admin-overline">Your preferences</p><h2>My account</h2></div>
+          <span class="admin-section-icon" aria-hidden="true">06</span>
+        </div>
         <section class="admin-profile-summary" aria-label="Admin profile">
           <div class="admin-profile-heading">
             <img id="adminProfileCardPhoto" class="admin-profile-avatar" src="/default-avatar.svg" alt="Admin profile picture">
@@ -145,8 +262,8 @@
         <p class="muted">Participants can see this profile in every election directory.</p>
         <label for="adminProfileDisplayName">Display name</label>
         <input id="adminProfileDisplayName" maxlength="80" placeholder="How your name appears to participants">
-        <label for="adminProfilePhoto">Upload profile picture (JPEG, PNG, or WebP; max 1 MB)</label>
-        <input id="adminProfilePhoto" type="file" accept="image/jpeg,image/png,image/webp">
+        <label for="adminProfilePhoto">Upload profile picture (JPEG or PNG; max 25 MB)</label>
+        <input id="adminProfilePhoto" type="file" accept="image/jpeg,image/png">
         <button id="removeAdminProfilePhoto" class="secondary" type="button">Use default picture</button>
         <label for="adminProfileBio">About me</label>
         <textarea id="adminProfileBio" rows="3" maxlength="500" placeholder="A little about you"></textarea>
@@ -161,15 +278,22 @@
         <button id="changePw">Change my password</button>
       </div>
 
-      <div class="card">
-        <h2>Election profiles</h2>
+      <div class="card admin-section admin-profiles" id="profilesPanel">
+        <div class="admin-section-heading">
+          <div><p class="admin-overline">Community</p><h2>Election profiles</h2></div>
+          <span class="admin-section-icon" aria-hidden="true">07</span>
+        </div>
         <p class="muted">Manage voter and candidate profiles for the selected election.</p>
         <button id="loadElectionProfiles" class="secondary">Load profiles for selected election</button>
         <div id="managedProfiles" style="margin-top:1rem"></div>
       </div>
 
-      <div id="adminsCard" class="card hidden">
-        <h2>Admin accounts (Main Admin only)</h2>
+      <div id="adminsCard" class="card admin-section admin-admins hidden">
+        <div class="admin-section-heading">
+          <div><p class="admin-overline">Access control</p><h2>Admin accounts</h2></div>
+          <span class="admin-section-icon" aria-hidden="true">08</span>
+        </div>
+        <p class="muted">Main Admin only</p>
         <div class="scroll"><table id="adminTable"></table></div>
         <h3>Add an admin</h3>
         <div class="row">

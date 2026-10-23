@@ -3,72 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Candidate account</title>
+  <meta name="theme-color" content="#171717">
+  <title>Candidate account · Arellano University</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/sign-in.css">
 </head>
-<body>
-  <header><img id="logo" alt=""><h1 id="election-title">Candidate account</h1></header>
-  <main>
-    <section id="loginCard" class="card login-card login-main">
-      <p class="eyebrow">Candidate access</p>
-      <h2>Sign in to your account</h2>
-      <p class="login-intro">Use the login details provided by your election administrator.</p>
-      <label for="username">Username</label>
-      <input id="username" autocomplete="username" required>
-      <label for="password">Password</label>
-      <input id="password" type="password" autocomplete="current-password" required>
-      <p id="loginError" class="error" role="alert"></p>
-      <button id="loginBtn">Sign in</button>
+<body class="sign-in-page candidate-sign-in-page">
+  <header class="sign-in-header">
+    <a class="sign-in-university" href="/" aria-label="Arellano University Apolinario Mabini Campus election portal">
+      <img class="sign-in-university-logo" src="/assets/au-amc-logo-transparent.png" alt="Arellano University seal">
+      <span class="sign-in-university-copy">
+        <strong>Arellano University — Apolinario Mabini Campus</strong>
+        <span>Election page — <span id="election-title">Current election display</span></span>
+      </span>
+    </a>
+    <img class="sign-in-society-logo" src="/assets/ict-soc-logo.png" alt="ICT Society seal">
+  </header>
+  <main class="sign-in-main candidate-sign-in-main">
+    <section id="loginCard" class="candidate-login-panel" aria-labelledby="candidateLoginHeading">
+      <div class="candidate-login-intro">
+        <h1 id="candidateLoginHeading">Candidate login</h1>
+        <p>Use the login details provided by your<br class="candidate-login-wide-break"> election administrator.</p>
+      </div>
+
+      <div class="candidate-login-form">
+        <label for="username">Username</label>
+        <input id="username" autocomplete="username" required>
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <p id="loginError" class="candidate-login-error" role="alert" aria-live="polite"></p>
+        <div class="candidate-login-actions">
+          <button id="loginBtn" type="button">Continue to login</button>
+          <a href="/">Back to portal</a>
+        </div>
+      </div>
     </section>
 
-    <section id="dashboard" hidden>
-      <section class="candidate-profile card" aria-label="Candidate profile">
-        <div class="candidate-profile-heading">
+    <section id="dashboard" class="candidate-dashboard" hidden>
+      <section class="candidate-profile-panel" aria-labelledby="candidateProfileHeading">
+        <h2 id="candidateProfileHeading" class="candidate-dashboard-heading">Candidate profile</h2>
+        <div class="candidate-profile-banner">
           <img id="profilePhotoPreview" class="candidate-profile-avatar" src="/default-avatar.svg" alt="Profile picture">
           <div class="candidate-profile-identity">
-            <p class="eyebrow">Candidate profile</p>
-            <h2 id="candidateName"></h2>
+            <h3 id="candidateName"></h3>
             <p id="candidatePosition" class="candidate-profile-position"></p>
-            <p id="candidateElection" class="muted"></p>
+            <p id="candidatePartyName" class="candidate-profile-party-name"></p>
+            <p id="candidateElection" class="candidate-profile-election"></p>
           </div>
         </div>
 
         <div class="candidate-profile-stats" aria-label="Vote totals">
           <div class="candidate-profile-stat">
             <strong id="voteCount">0</strong>
-            <span>Current votes</span>
+            <span>Current vote</span>
           </div>
           <div class="candidate-profile-stat">
             <strong id="partyVoteCount">0</strong>
-            <span>Party total votes</span>
+            <span id="partyVoteCountLabel">Party total vote</span>
           </div>
         </div>
 
-        <section class="candidate-profile-about" aria-labelledby="candidateBioHeading">
-          <h3 id="candidateBioHeading">Bio</h3>
-          <p id="candidateBio" class="candidate-profile-bio"></p>
-          <h3>Social links</h3>
-          <nav id="candidateSocialLinks" class="social-links" aria-label="Candidate social links"></nav>
-          <p id="candidateSocialEmpty" class="muted">No social links added yet.</p>
-        </section>
+        <div class="candidate-profile-details">
+          <section class="candidate-profile-about" aria-labelledby="candidateBioHeading">
+            <h3 id="candidateBioHeading">About me</h3>
+            <p id="candidateBio" class="candidate-profile-bio"></p>
+            <h3>Social links</h3>
+            <nav id="candidateSocialLinks" class="candidate-profile-social" aria-label="Candidate social links"></nav>
+            <p id="candidateSocialEmpty" class="candidate-profile-social-empty">No social links added yet.</p>
+          </section>
 
-        <div class="btns candidate-profile-actions">
-          <a class="btn alt" href="/profiles.html">Explore election profiles</a>
-          <button id="logoutBtn" class="secondary">Log out</button>
+          <section id="candidateParty" class="candidate-party-details" hidden aria-label="Candidate party">
+            <img id="candidatePartyLogo" class="party-logo" alt="">
+            <span id="candidatePartyBadge" class="party-badge"></span>
+            <p id="candidatePartySlogan"></p>
+            <h3>Party platform</h3>
+            <p id="candidatePartyPlatform"></p>
+          </section>
+        </div>
+
+        <div class="candidate-profile-actions">
+          <a href="/profiles.html">Explore election profiles</a>
+          <button id="logoutBtn" type="button">Log out</button>
         </div>
       </section>
 
-      <section class="card">
-        <h2>My profile</h2>
-        <label for="profilePhoto">Upload profile picture (JPEG, PNG, or WebP; max 1 MB)</label>
-        <input id="profilePhoto" type="file" accept="image/jpeg,image/png,image/webp">
-        <button id="removeProfilePhoto" class="secondary" type="button">Use default picture</button>
-        <label for="profileBio">About me</label>
-        <textarea id="profileBio" rows="4" maxlength="500" placeholder="Share a little about yourself"></textarea>
-        <label for="profileLinks">Social links (one per line: name | https://...)</label>
-        <textarea id="profileLinks" rows="3" placeholder="Instagram | https://instagram.com/yourname"></textarea>
-        <button id="saveProfile">Save profile</button>
-        <p id="profileMessage" class="muted" role="status"></p>
+      <section class="candidate-editor-panel" aria-labelledby="candidateEditorHeading">
+        <h2 id="candidateEditorHeading" class="candidate-dashboard-heading">Candidate profile editor</h2>
+        <div class="candidate-editor-form">
+          <label class="candidate-photo-upload" for="profilePhoto">
+            <span class="candidate-photo-upload-icon" aria-hidden="true">+</span>
+            <span class="candidate-photo-upload-copy">
+              <strong>Upload profile photo</strong>
+              <span>PNG · JPEG · Max 25 MB</span>
+            </span>
+            <input id="profilePhoto" type="file" accept="image/jpeg,image/png">
+          </label>
+          <button id="removeProfilePhoto" class="candidate-remove-photo" type="button">Use default picture</button>
+
+          <label for="profileBio">About me</label>
+          <textarea id="profileBio" rows="4" maxlength="500" placeholder="Share a little about yourself"></textarea>
+
+          <label for="profileLinks">Social links</label>
+          <textarea id="profileLinks" rows="3" placeholder="One per line: Instagram | https://instagram.com/yourname"></textarea>
+
+          <button id="saveProfile" class="candidate-save-profile" type="button">Save profile</button>
+          <p id="profileMessage" class="candidate-profile-message" role="status"></p>
+        </div>
       </section>
     </section>
   </main>

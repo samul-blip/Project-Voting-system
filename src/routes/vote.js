@@ -30,13 +30,13 @@ router.post('/', requireVoter, async (req, res) => {
     for (const p of positions) {
       const candidateId = choices[p.id];
       const valid = await client.query(
-        `SELECT c.name FROM candidates c JOIN positions p ON p.id = c.position_id
+        `SELECT c.name, c.party_id FROM candidates c JOIN positions p ON p.id = c.position_id
          WHERE c.id=$1 AND p.id=$2 AND p.election_id=$3`,
         [candidateId, p.id, electionId]);
       if (!valid.rowCount) throw new Error('Invalid selection');
       await client.query(
-        'INSERT INTO votes (election_id, position_id, candidate_id) VALUES ($1,$2,$3)',
-        [electionId, p.id, candidateId]);
+        'INSERT INTO votes (election_id, position_id, candidate_id, party_id) VALUES ($1,$2,$3,$4)',
+        [electionId, p.id, candidateId, valid.rows[0].party_id]);
       picks.push({ position: p.title, candidate: valid.rows[0].name });
     }
 

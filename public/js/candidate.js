@@ -51,11 +51,32 @@ async function loadCandidate() {
     (candidate.has_profile_photo ? `/api/candidate/me/avatar?v=${Date.now()}` : '/default-avatar.svg');
   $('candidateName').textContent = candidate.name;
   $('candidatePosition').textContent = [candidate.position, candidate.grade_section].filter(Boolean).join(' · ');
+  $('candidatePartyName').textContent = candidate.party_name || 'Independent';
   $('candidateElection').textContent = candidate.election_title;
   $('voteCount').textContent = candidate.votes;
-  $('partyVoteCount').textContent = '0';
+  $('partyVoteCount').textContent = candidate.party_votes || 0;
+  $('partyVoteCountLabel').textContent = candidate.party_name
+    ? 'Party votes (across positions)'
+    : 'Party total votes';
   $('candidateBio').textContent = candidate.profile_bio || candidate.bio || 'No bio added yet.';
   renderSocialLinks(candidate.social_links);
+  const partyPanel = $('candidateParty');
+  partyPanel.hidden = !candidate.party_name;
+  if (candidate.party_name) {
+    const badge = $('candidatePartyBadge');
+    badge.textContent = candidate.party_name;
+    const partyColor = /^#[0-9a-f]{6}$/i.test(candidate.party_color || '') ? candidate.party_color : '#1e66f5';
+    badge.style.setProperty('--party-color', partyColor);
+    partyPanel.style.setProperty('--party-color', partyColor);
+    const partyLogo = $('candidatePartyLogo');
+    partyLogo.hidden = !candidate.party_logo_url;
+    partyLogo.onerror = () => { partyLogo.hidden = true; };
+    if (candidate.party_logo_url) partyLogo.src = candidate.party_logo_url;
+    else partyLogo.removeAttribute('src');
+    $('candidatePartySlogan').textContent = candidate.party_slogan || '';
+    $('candidatePartySlogan').hidden = !candidate.party_slogan;
+    $('candidatePartyPlatform').textContent = candidate.party_platform || 'No platform provided yet.';
+  }
   $('profileBio').value = candidate.profile_bio || '';
   $('profileLinks').value = setSocialLinks(candidate.social_links);
   return true;

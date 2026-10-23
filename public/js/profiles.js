@@ -29,6 +29,10 @@ async function loadProfiles() {
       <span class="pill">${escapeHtml(profile.type)}</span>
       <h3>${escapeHtml(profile.name)}</h3>
       ${profile.position ? `<p class="muted">${escapeHtml(profile.position)}${profile.grade_section ? ` · ${escapeHtml(profile.grade_section)}` : ''}</p>` : ''}
+      ${profile.party_name && profile.party_logo_url ? `<img class="party-logo" src="${escapeHtml(profile.party_logo_url)}" alt="">` : ''}
+      ${profile.party_name ? `<span class="party-badge" style="--party-color:${/^#[0-9a-f]{6}$/i.test(profile.party_color || '') ? profile.party_color : '#1e66f5'}">${escapeHtml(profile.party_name)}</span>` : ''}
+      ${profile.party_slogan ? `<p class="party-slogan">${escapeHtml(profile.party_slogan)}</p>` : ''}
+      ${profile.party_platform ? `<p class="party-platform">${escapeHtml(profile.party_platform)}</p>` : ''}
       ${profile.profile_bio ? `<p>${escapeHtml(profile.profile_bio)}</p>` : '<p class="muted">No bio yet.</p>'}
       ${links ? `<nav class="social-links" aria-label="${escapeHtml(profile.name)} social links">${links}</nav>` : ''}
     </article>`;
@@ -38,6 +42,9 @@ async function loadProfiles() {
       image.onerror = null;
       image.src = '/default-avatar.svg';
     };
+  });
+  list.querySelectorAll('.party-logo').forEach(image => {
+    image.onerror = () => image.remove();
   });
 }
 

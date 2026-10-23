@@ -17,6 +17,11 @@ router.get('/', requireParticipant, async (req, res) => {
 
   const { rows } = await pool.query(
     `SELECT 'candidate' AS type, c.id, c.name, c.grade_section, p.title AS position,
+            pa.name AS party_name,
+            COALESCE(CASE WHEN pa.logo_data IS NOT NULL
+              THEN '/api/election/' || p.election_id::text || '/party/' || pa.id::text || '/logo'
+            END, pa.logo_url) AS party_logo_url, pa.color AS party_color,
+            pa.platform AS party_platform, pa.slogan AS party_slogan,
             COALESCE(c.profile_photo_url,
               CASE WHEN c.profile_photo_data IS NOT NULL THEN
                 '/api/profiles/avatar/candidate/' || c.id::text
@@ -24,10 +29,13 @@ router.get('/', requireParticipant, async (req, res) => {
             c.profile_bio, c.social_links
      FROM candidates c
      JOIN positions p ON p.id = c.position_id
+     LEFT JOIN parties pa ON pa.id = c.party_id AND pa.election_id = p.election_id
      WHERE p.election_id = $1
      UNION ALL
      SELECT 'voter' AS type, v.id, COALESCE(v.full_name, 'Voter') AS name,
             v.grade_section, NULL::text AS position,
+            NULL::text AS party_name, NULL::text AS party_logo_url, NULL::text AS party_color,
+            NULL::text AS party_platform, NULL::text AS party_slogan,
             COALESCE(v.profile_photo_url,
               CASE WHEN v.profile_photo_data IS NOT NULL THEN
                 '/api/profiles/avatar/voter/' || v.id::text
@@ -39,6 +47,8 @@ router.get('/', requireParticipant, async (req, res) => {
      SELECT 'admin' AS type, a.id,
             COALESCE(NULLIF(a.display_name, ''), a.username) AS name,
             NULL::text AS grade_section, 'Administrator'::text AS position,
+            NULL::text AS party_name, NULL::text AS party_logo_url, NULL::text AS party_color,
+            NULL::text AS party_platform, NULL::text AS party_slogan,
             COALESCE(a.profile_photo_url,
               CASE WHEN a.profile_photo_data IS NOT NULL THEN
                 '/api/profiles/avatar/admin/' || a.id::text
